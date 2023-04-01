@@ -3,12 +3,15 @@
   import Button from './Button.vue'
   import Error from './Error.vue'
   import IconoValidacion from './IconoValidacion.vue'
-  import AlertaUsuario from './AlertaUsuario.vue'
+  import OptionCountry from './OptionCountry.vue';
+  import ButtonSubmit from './ButtonSubmit.vue';
+  import AlertaUsuario from './AlertaUsuario.vue';
 
   const activePhase = ref(1);
   const error = ref(false);
   const error2 = ref(false);
-  const alerta = ref(false)
+  const showModal = ref(false);
+  const alerta = ref(false);
   const errorPais = ref();
   const errorGenero = ref(0);
   const errorNombre = ref(0);
@@ -24,11 +27,11 @@
   const errorCodigoPostal = ref(0);
 
   const expresiones = {
-  generalLetras: /^[a-zA-ZÀ-ÿ\s]{2,100}$/,
-	nombre: /^[a-zA-ZÀ-ÿ\s]{3,40}$/, // Letras y espacios, pueden llevar acentos.
-	password: /^.{4,16}$/, // 4 a 12 digitos.
-	correo: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
-	cedula: /^\d{5,999999999999999}$/ // 5 a n numeros.
+    generalLetras: /^[a-zA-ZÀ-ÿ\s]{2,100}$/,
+    nombre: /^[a-zA-ZÀ-ÿ\s]{3,40}$/, // Letras y espacios, pueden llevar acentos.
+    password: /^.{4,16}$/, // 4 a 12 digitos.
+    correo: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
+    cedula: /^\d{5,999999999999999}$/ // 5 a n numeros.
   }
 
   let usuario = reactive({
@@ -59,6 +62,10 @@
     activePhase.value--;
   };
 
+  const modal = () => {
+    showModal.value = true;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const someV = (element) => (element == 2);
@@ -86,21 +93,29 @@
     error.value = false;
     error2.value = false;
     alerta.value = true;
+    setTimeout(() => {
+      alerta.value = false;
+    }, 3000);
+    modal()
+    console.log(usuario);
   };
 
   const validarFormulario = (e) => {
     switch (e.target.name) {
+
       case "pais":
         usuario = {
           ...usuario,
           pais: e.target.value.trim(),
         };
+        errorPais.value = 1;
         break;
 
       case "genero":
+
         usuario = {
-          ...usuario,
-          genero: e.target.value.trim(),
+        ...usuario,
+        genero: e.target.value.trim(),
         };
         if(expresiones.generalLetras.test(e.target.value)){
           errorGenero.value = 1;
@@ -112,12 +127,13 @@
         break;
 
       case "nombre":
+
+        errorNombre.value = 1;
         usuario = {
-          ...usuario,
-          nombre: e.target.value.trim(),
+        ...usuario,
+        nombre: e.target.value.trim(),
         };
         if(expresiones.nombre.test(e.target.value)){
-          errorNombre.value = 1;
         }else if (usuario.nombre.length >= 1){
           errorNombre.value = 2;
         }else{
@@ -126,9 +142,10 @@
         break;
 
       case "apellido":
+
         usuario = {
-          ...usuario,
-          apellido: e.target.value.trim(),
+        ...usuario,
+        apellido: e.target.value.trim(),
         };
         if(expresiones.nombre.test(e.target.value)){
           errorApellido.value = 1;
@@ -140,13 +157,29 @@
         break;
 
       case "fecha":
+
+
+        let fechaSeparada = e.target.value.split('-');
+        const anio = fechaSeparada[0];
+        const mes = fechaSeparada[1];
+        const dia = fechaSeparada[2];
+        const edad = 18;
+        const miFecha = new Date();
+        miFecha.setFullYear(anio, mes - 1, dia);
+
+        const fechaActal = new Date();
+        fechaActal.setFullYear(fechaActal.getFullYear() - edad);
+
+        if ((fechaActal - miFecha) < 0) {
+          errorFecha.value = 2;
+          return
+        }
+
         usuario = {
           ...usuario,
           fecha: e.target.value.trim(),
         };
-        if(usuario.fecha > 1){
-          errorFecha.value = 1;
-        }
+        errorFecha.value = 1;
         break;
 
       case "documento":
@@ -157,9 +190,10 @@
         break;
 
       case "documentoI":
+
         usuario = {
-          ...usuario,
-          documentoI: e.target.value.trim(),
+        ...usuario,
+        documentoI: e.target.value.trim(),
         };
         if(expresiones.cedula.test(e.target.value)){
           errorDocumento.value = 1;
@@ -179,9 +213,10 @@
         break;
 
       case "email":
+
         usuario = {
-          ...usuario,
-          email: e.target.value.trim(),
+        ...usuario,
+        email: e.target.value.trim(),
         };
         if(expresiones.correo.test(e.target.value)){
           errorEmail.value = 1;
@@ -193,9 +228,10 @@
         break;
 
       case "password":
+
         usuario = {
-          ...usuario,
-          password: e.target.value.trim(),
+        ...usuario,
+        password: e.target.value.trim(),
         };
         if(expresiones.password.test(e.target.value)){
           errorPassword.value = 1;
@@ -208,10 +244,10 @@
 
       case "password2":
         usuario = {
-          ...usuario,
-          password2: e.target.value.trim(),
+        ...usuario,
+        password2: e.target.value.trim(),
         };
-        if(usuario.password2 === usuario.password){
+        if(e.target.value === usuario.password){
           errorPassword2.value = 1;
         }else if (usuario.password2.length !== 1){
           errorPassword2.value = 2;
@@ -232,6 +268,7 @@
         break;
 
       case "celular":
+
         usuario = { ...usuario, celular: e.target.value.trim()};
         if(expresiones.cedula.test(e.target.value)){
           errorCelular.value = 1;
@@ -243,10 +280,11 @@
         break;
 
       case "direccion":
+
         usuario = { ...usuario, direccion: e.target.value.trim()};
-        if(usuario.direccion.length >= 5){
+        if(e.target.value.length >= 5){
           errorDireccion.value = 1;
-        }else if (usuario.direccion.length === 1){
+        }else if (usuario.direccion.length < 5){
           errorDireccion.value = 2;
         }else{
           errorDireccion.value = 0;
@@ -254,6 +292,7 @@
         break;
 
       case "codigo-postal":
+
         usuario = { ...usuario, codigoPostal: e.target.value.trim()};
         if(expresiones.cedula.test(e.target.value)){
           errorCodigoPostal.value = 1;
@@ -271,12 +310,13 @@
 </script>
 
 <template >
+
   <div id="details1"
   v-if="activePhase == 1"
   class="my-20 max-w-xl mx-auto bg-white shadow p-10 rounded-lg"
   >
 
-    <div class="flex justify-center">
+    <div class="ms-24">
       <ol class="flex items-center w-full mx-auto">
         <li class="flex w-full items-center text-orange-600 dark:text-white after:content-[''] after:w-full after:h-1 after:border-b after:border-blue-100 after:border-4 after:inline-block dark:after:border-orange-600">
             <span class="font-bold flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full lg:h-12 lg:w-12 dark:bg-orange-600 shrink-0">
@@ -299,21 +339,21 @@
 
     <form action="">
     <label for="pais" class="block text-gray-700 uppercase font-bold mt-5">País</label>
-    <select name="pais" id="pais" required
-    class="mt-2 w-full p-2 bg-white border border-gray-300 rounded-lg text-center
-    text-xl font-bold text-gray-500"
-    @change="validarFormulario"
-    >
-        <option disabled selected >Elige tu pais</option>
-        <option value="Costa Rica">Costa Rica</option>
-        <option value="Panama">Panama</option>
-        <option value="Nicaragua">Nicaragua</option>
-        <option value="Honduras">Honduras</option>
-        <option value="El Salvador">El Salvador</option>
-        <option value="Guatemala">Guatemala</option>
 
-    </select>
+    <div class="relative">
 
+        <select name="pais" id="pais" required
+        class="mt-2 w-full p-2 bg-white border border-gray-300 rounded-lg text-center
+        text-xl font-bold text-gray-500"
+        @input="validarFormulario"
+        >
+          <option disabled selected value="0">Elige tu pais</option>
+          <OptionCountry />
+        </select>
+        <IconoValidacion
+          :errorVariable = errorPais
+        />
+      </div>
     <label for="genero" class="block text-gray-700 uppercase font-bold mt-5">Genero</label>
     <div class="relative">
       <input
@@ -323,8 +363,7 @@
         placeholder="Ingresa tu genero"
         class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
         :value="usuario.genero"
-        @keyup="validarFormulario"
-        @blur="validarFormulario"
+        @input="validarFormulario"
       >
       <IconoValidacion
           :errorVariable = errorGenero
@@ -341,8 +380,7 @@
         placeholder="Ingresa tu nombre"
         class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
         :value="usuario.nombre"
-        @keyup="validarFormulario"
-        @blur="validarFormulario"
+        @input="validarFormulario"
       >
         <IconoValidacion
           :errorVariable = errorNombre
@@ -358,8 +396,7 @@
         placeholder="Ingresa tu apellido"
         class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
         :value="usuario.apellido"
-        @keyup="validarFormulario"
-        @blur="validarFormulario"
+        @input="validarFormulario"
       >
 
         <IconoValidacion
@@ -370,20 +407,26 @@
 
 
     <label for="fecha" class="block text-gray-700 uppercase font-bold mt-5">Fecha de nacimiento</label>
-    <input
-      type="date"
-      name="fecha"
-      id="fecha"
-      class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
-      :value="usuario.fecha"
-      @change="validarFormulario"
-    >
+    <div class="relative">
+      <input
+        type="date"
+        name="fecha"
+        id="fecha"
+        class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
+        :value="usuario.fecha"
+        @input="validarFormulario"
+      >
+
+      <IconoValidacion
+        :errorVariable = errorFecha
+      />
+    </div>
 
     <label for="documento" class="block text-gray-700 uppercase font-bold mt-5">Tipo de Documento</label>
     <select name="documento" id="documento"
     class="mt-2 w-full p-2 bg-white border border-gray-300 rounded-lg text-center
     text-xl font-bold text-gray-500"
-    @change="validarFormulario"
+    @input="validarFormulario"
     >
         <option disabled selected >Elige tu tipo de documento</option>
         <option value="Cedula">Cedula de ciudadanía</option>
@@ -440,13 +483,12 @@
     </form>
   </div>
 
-  <div
-    id="details2"
+  <div id="details2"
     v-if="activePhase == 2"
     class="my-20 max-w-xl mx-auto bg-white shadow p-10 rounded-lg"
   >
 
-    <div class="flex justify-center">
+    <div class="ms-24">
       <ol class="flex items-center w-full mx-auto">
         <li class="flex w-full items-center text-orange-600 dark:text-white after:content-[''] after:w-full after:h-1 after:border-b after:border-blue-100 after:border-4 after:inline-block dark:after:border-orange-600">
           <span class="font-bold flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full lg:h-12 lg:w-12 dark:bg-orange-600 shrink-0">
@@ -477,8 +519,7 @@
         placeholder="Ingresa tu email"
         class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
         :value="usuario.email"
-        @keyup="validarFormulario"
-        @blur="validarFormulario"
+        @input="validarFormulario"
       >
 
       <IconoValidacion
@@ -495,8 +536,7 @@
         placeholder="Ingresa tu contraseña"
         class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
         :value="usuario.password"
-        @keyup="validarFormulario"
-        @blur="validarFormulario"
+        @input="validarFormulario"
       >
       <IconoValidacion
           :errorVariable = errorPassword
@@ -513,8 +553,7 @@
         placeholder="Ingresa tu contraseña"
         class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
         :value="usuario.password2"
-        @keyup="validarFormulario"
-        @blur="validarFormulario"
+        @input="validarFormulario"
       >
       <IconoValidacion
           :errorVariable = errorPassword2
@@ -533,8 +572,7 @@
         placeholder="Ingresa tu Celular"
         class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
         :value="usuario.celular"
-        @keyup="validarFormulario"
-        @blur="validarFormulario"
+        @input="validarFormulario"
       >
       <IconoValidacion
           :errorVariable = errorCelular
@@ -550,8 +588,7 @@
           placeholder="Ingresa tu telefono"
           class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
           :value="usuario.telefono"
-          @keyup="validarFormulario"
-          @blur="validarFormulario"
+          @input="validarFormulario"
         >
         <IconoValidacion
             :errorVariable = errorTelefono
@@ -572,12 +609,11 @@
     </form>
   </div>
 
-  <div
-  id="details3"
-  v-if="activePhase == 3"
-  class="my-20 max-w-xl mx-auto bg-white shadow p-10 rounded-lg"
-  >
-  <div class="flex justify-center">
+  <div id="details3"
+    v-if="activePhase == 3"
+    class="my-20 max-w-xl mx-auto bg-white shadow p-10 rounded-lg"
+    >
+    <div class="ms-24">
       <ol class="flex items-center w-full mx-auto">
         <li class="flex w-full items-center text-orange-600 dark:text-white after:content-[''] after:w-full after:h-1 after:border-b after:border-blue-100 after:border-4 after:inline-block dark:after:border-orange-600">
           <span class="font-bold flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full lg:h-12 lg:w-12 dark:bg-orange-600 shrink-0">
@@ -609,8 +645,7 @@
             placeholder="Ingresa tu dirección"
             class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
             :value="usuario.direccion"
-            @keyup="validarFormulario"
-            @blur="validarFormulario"
+            @input="validarFormulario"
           >
           <IconoValidacion
               :errorVariable = errorDireccion
@@ -627,8 +662,7 @@
           placeholder="Ingresa tu código postal"
           class="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md"
           :value="usuario.codigoPostal"
-          @keyup="validarFormulario"
-          @blur="validarFormulario"
+          @input="validarFormulario"
         >
         <IconoValidacion
             :errorVariable = errorCodigoPostal
@@ -647,7 +681,12 @@
         />
       </div>
 
-    
+      <div v-if="alerta">
+        <AlertaUsuario
+          :alerta = "'Usuario creado correctamente'"
+        />
+      </div>
+
 
       <div class="flex justify-between mt-10">
         <Button
@@ -655,10 +694,20 @@
           @fn = "handleClickD"
         />
 
-        <button
-          type="submit"
-          class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
-          >Crear Usuario</button>
+
+
+        <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded">
+          Crear Usuario
+        </button>
+
+        <modal :show="showModal" @update:show="showModal = $event" >
+          <template #header>
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Usuario</h3>
+          </template>
+          <p class="text-md text-gray-500">Usuario Creado Correctamente</p>
+        </modal>
+
+
       </div>
     </form>
   </div>

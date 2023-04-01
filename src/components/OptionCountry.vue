@@ -1,22 +1,26 @@
-<script setup>
+<script>
 
+import { useApi } from '../helpers/useApi.js';
+import { onMounted } from 'vue';
 
+export default {
+  setup() {
+    const { data, error, fetchData } = useApi('https://restcountries.com/v3.1/all');
 
- const traerDatos =  async () => {
+    onMounted(() => {
+      fetchData();
+    });
 
-  try {
-    const url = `https://restcountries.com/v3.1/all`
-    const data = await fetch(url)
-    const countries = await data.json()
-    return countries
-  } catch (error) {
-    console.log(error);
-  }
-
- }
- const paises = await traerDatos()
-//  console.log(paises);
+    return {
+      data,
+      error,
+    };
+  },
+};
 </script>
 
 <template>
+
+  <option v-for="pais in data" :key="pais.name.common" :value=pais.name.common>{{ pais.name.common }}</option>
+
 </template>
