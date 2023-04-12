@@ -365,6 +365,7 @@
         :value="usuario.genero"
         @input="validarFormulario"
       >
+      
       <IconoValidacion
           :errorVariable = errorGenero
       />
